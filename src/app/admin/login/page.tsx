@@ -4,26 +4,45 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { API_URL } from '@/lib/api';
 
 export default function LoginPage() {
   const router = useRouter();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
 
-    // Simulasi login sementara untuk 2 akun admin sebelum terhubung ke backend
-    if (
-      (username === 'admin' && password === 'admin123') ||
-      (username === 'superadmin' && password === 'superadmin123')
-    ) {
-      // Redirect ke Dashboard jika berhasil
+    try {
+      const res = await fetch(`${API_URL}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || 'Login gagal!');
+      }
+
+      // Simpan token JWT dan data admin ke localStorage
+      localStorage.setItem('adminToken', data.data.token);
+      localStorage.setItem('adminUser', JSON.stringify(data.data));
+
+      // Redirect ke Dashboard
       router.push('/admin/dashboard');
-    } else {
-      setError('Username atau password salah!');
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -59,8 +78,8 @@ export default function LoginPage() {
                 required
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="Masukkan username admin"
-                className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 outline-none transition text-sm"
+                placeholder="admin / superadmin"
+                className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 outline-none transition text-sm text-gray-900"
               />
             </div>
 
@@ -74,7 +93,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 outline-none transition text-sm"
+                className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 outline-none transition text-sm text-gray-900"
               />
             </div>
           </div>
@@ -82,9 +101,10 @@ export default function LoginPage() {
           <div>
             <button
               type="submit"
-              className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-semibold py-3 px-4 rounded-lg transition shadow-md hover:shadow-lg text-sm"
+              disabled={loading}
+              className="w-full bg-emerald-700 hover:bg-emerald-800 disabled:bg-emerald-400 text-white font-semibold py-3 px-4 rounded-lg transition shadow-md text-sm"
             >
-              Masuk ke Dashboard
+              {loading ? 'Memeriksa Kredensial...' : 'Masuk ke Dashboard'}
             </button>
           </div>
 
