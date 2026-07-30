@@ -15,10 +15,12 @@ import {
   ChevronRight,
   Newspaper,
   Landmark,
-} from 'lucide-react';
+  Map,
+  Move,
+} from 'lucide-react'; // tambahkan Map dan Move
 
 // ============================================================
-//  TIPE & DATA MOCK (gambar dari picsum, lebih stabil)
+//  TIPE & DATA MOCK
 // ============================================================
 interface Berita {
   id?: string;
@@ -95,10 +97,9 @@ const DATA_KECAMATAN = {
 };
 
 // ============================================================
-//  KOMPONEN UI
+//  KOMPONEN UI (NewsCard dan NewsSkeleton)
 // ============================================================
 
-// 1. News Card dengan fallback gambar (menggunakan <img> biasa)
 function NewsCard({ item, index }: { item: Berita; index: number }) {
   const [imgSrc, setImgSrc] = useState(item.gambar || '/pemandagan.png');
 
@@ -111,7 +112,6 @@ function NewsCard({ item, index }: { item: Berita; index: number }) {
       className="group bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100 hover:shadow-md transition-all duration-300 hover:-translate-y-1"
     >
       <div className="relative h-48 overflow-hidden bg-slate-100">
-        {/* Menggunakan <img> agar bisa menangani onError */}
         <img
           src={imgSrc}
           alt={item.judul}
@@ -145,7 +145,6 @@ function NewsCard({ item, index }: { item: Berita; index: number }) {
   );
 }
 
-// 2. Skeleton
 function NewsSkeleton() {
   return (
     <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100 animate-pulse">
@@ -176,7 +175,6 @@ export default function Home() {
         if (res.ok) {
           const json = await res.json();
           if (json.data && json.data.length > 0) {
-            // Filter gambar Unsplash dan ganti dengan picsum fallback
             const data = json.data.map((item: any) => ({
               ...item,
               gambar: item.gambar?.includes('unsplash.com')
@@ -201,10 +199,9 @@ export default function Home() {
 
       <main className="flex-grow">
         {/* ============================================================
-            HERO SECTION – FULL SCREEN & RESPONSIF
+            HERO SECTION
             ============================================================ */}
-        <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-          {/* Background Image */}
+        <section id="hero" className="relative min-h-screen flex items-center justify-center overflow-hidden">
           <div className="absolute inset-0">
             <Image
               src="/pemandagan.png"
@@ -218,7 +215,6 @@ export default function Home() {
             <div className="absolute inset-0 bg-gradient-to-b from-slate-900/70 via-slate-900/40 to-slate-900/80" />
           </div>
 
-          {/* Konten Hero */}
           <div className="relative z-10 max-w-5xl w-full mx-auto px-6 sm:px-8 lg:px-12 py-12 text-center">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
@@ -289,7 +285,6 @@ export default function Home() {
           </motion.div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Informasi Geografis */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               whileInView={{ opacity: 1, x: 0 }}
@@ -330,7 +325,6 @@ export default function Home() {
               </div>
             </motion.div>
 
-            {/* Daftar Desa + Potensi */}
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               whileInView={{ opacity: 1, x: 0 }}
@@ -424,7 +418,7 @@ export default function Home() {
         </section>
 
         {/* ============================================================
-            PETA LOKASI
+            PETA LOKASI – PREMIUM VERSION (REVISI SATELIT & BATAS WILAYAH)
             ============================================================ */}
         <section id="lokasi" className="py-16 bg-white border-t border-slate-100">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -449,10 +443,17 @@ export default function Home() {
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5 }}
-                className="lg:col-span-2 relative h-[380px] rounded-2xl overflow-hidden shadow-sm border border-slate-100 bg-slate-100"
+                className="lg:col-span-2 relative h-[400px] rounded-2xl overflow-hidden shadow-lg shadow-slate-200/60 border border-slate-100 bg-slate-100 group"
               >
+                {/* 
+                  REVISI IFRAME:
+                  q = Query pencarian nama kecamatan (memancing Google menampilkan garis batas)
+                  t = h (Hybrid: Citra satelit + label jalan & tempat)
+                  z = 13 (Zoom level standar kecamatan)
+                  output = embed
+                */}
                 <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d25462.183914597852!2d119.6763!3d-4.4325!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNMKwMjYnMzcuMCJTIDExOcKwNDAnMzUuMCJF!5e0!3m2!1sen!2sid!4v1234567890"
+                  src={`https://maps.google.com/maps?q=Kecamatan ${DATA_KECAMATAN.nama}, ${DATA_KECAMATAN.kabupaten}&t=h&z=13&output=embed`}
                   width="100%"
                   height="100%"
                   style={{ border: 0 }}
@@ -462,6 +463,22 @@ export default function Home() {
                   title={`Peta Kecamatan ${DATA_KECAMATAN.nama}`}
                   className="relative z-10"
                 />
+
+                {/* Badge lokasi mengambang */}
+                <div className="absolute top-4 left-4 z-20 flex items-center gap-2 bg-white/95 backdrop-blur-sm pl-2.5 pr-4 py-2 rounded-full shadow-md border border-slate-100">
+                  <div className="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0">
+                    <MapPin className="w-3.5 h-3.5 text-white" />
+                  </div>
+                  <span className="text-xs font-bold text-slate-800">{DATA_KECAMATAN.nama}</span>
+                </div>
+
+                {/* Hint interaksi */}
+                <div className="absolute bottom-4 right-4 z-20 flex items-center gap-1.5 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-sm border border-slate-100 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <Move className="w-3 h-3 text-slate-400" />
+                  <span className="text-[11px] text-slate-500 font-medium">Geser untuk eksplorasi</span>
+                </div>
+
+                <div className="absolute inset-0 z-20 pointer-events-none rounded-2xl ring-1 ring-inset ring-black/5" />
               </motion.div>
 
               <motion.div
@@ -471,36 +488,44 @@ export default function Home() {
                 transition={{ duration: 0.5, delay: 0.1 }}
                 className="space-y-4"
               >
-                <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
+                <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 hover:border-emerald-200 hover:shadow-md transition-all duration-300">
                   <div className="flex items-start gap-3">
-                    <div className="p-2.5 bg-emerald-50 rounded-xl text-emerald-600">
-                      <MapPin className="w-5 h-5" />
+                    <div className="p-2.5 bg-emerald-50 rounded-xl text-emerald-600 flex-shrink-0">
+                      <Landmark className="w-5 h-5" />
                     </div>
                     <div>
                       <h4 className="font-bold text-slate-900 text-sm">Alamat Kantor</h4>
-                      <p className="text-sm text-slate-500 mt-0.5">
+                      <p className="text-sm text-slate-500 mt-0.5 leading-relaxed">
                         Kecamatan {DATA_KECAMATAN.nama}, Kabupaten {DATA_KECAMATAN.kabupaten}, {DATA_KECAMATAN.provinsi}, {DATA_KECAMATAN.negara}
                       </p>
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
+                <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 hover:border-emerald-200 hover:shadow-md transition-all duration-300">
                   <div className="flex items-start gap-3">
-                    <div className="p-2.5 bg-emerald-50 rounded-xl text-emerald-600">
-                      <Landmark className="w-5 h-5" />
+                    <div className="p-2.5 bg-teal-50 rounded-xl text-teal-600 flex-shrink-0">
+                      <Map className="w-5 h-5" />
                     </div>
                     <div>
                       <h4 className="font-bold text-slate-900 text-sm">Wilayah</h4>
-                      <p className="text-sm text-slate-500 mt-0.5">
+                      <p className="text-sm text-slate-500 mt-0.5 leading-relaxed">
                         {DATA_KECAMATAN.desaKelurahan} desa/kelurahan, luas {DATA_KECAMATAN.luas} {DATA_KECAMATAN.luasSatuan}
                       </p>
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-emerald-50 rounded-2xl p-4 border border-emerald-100 text-center">
-                  <p className="text-xs text-slate-500">📍 Geser peta untuk eksplorasi wilayah sekitar</p>
+                {/* Mini stats grid */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl p-3.5 text-center border border-emerald-100/60">
+                    <p className="text-xl font-bold text-slate-900">{DATA_KECAMATAN.desaKelurahan}</p>
+                    <p className="text-[11px] text-slate-500 font-medium mt-0.5">Kelurahan</p>
+                  </div>
+                  <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl p-3.5 text-center border border-emerald-100/60">
+                    <p className="text-xl font-bold text-slate-900">{DATA_KECAMATAN.luas}</p>
+                    <p className="text-[11px] text-slate-500 font-medium mt-0.5">{DATA_KECAMATAN.luasSatuan}</p>
+                  </div>
                 </div>
               </motion.div>
             </div>
@@ -508,7 +533,10 @@ export default function Home() {
         </section>
       </main>
 
-      <Footer />
+      {/* ✅ BUNGKUS FOOTER DENGAN SECTION id="kontak" */}
+      <section id="kontak" className="scroll-mt-20">
+        <Footer />
+      </section>
     </div>
   );
 }

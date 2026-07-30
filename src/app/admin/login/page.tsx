@@ -1,3 +1,4 @@
+// src/app/admin/login/page.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -5,7 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Lock, ShieldCheck, ChevronRight } from 'lucide-react';
+import { Shield, Lock, KeyRound, ArrowLeft } from 'lucide-react';
 import { API_URL } from '@/lib/api';
 
 export default function LoginPage() {
@@ -14,6 +15,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('adminToken');
@@ -52,62 +54,81 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gray-900">
-      {/* ========== BACKGROUND ========== */}
+    <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-slate-900">
+      {/* ===== BACKGROUND SEDERHANA ===== */}
       <div className="absolute inset-0 z-0">
         <Image
           src="/pemandagan.png"
-          alt="Pemandangan Kecamatan Tanete Riaja"
+          alt="Background"
           fill
           priority
-          className="object-cover"
+          className="object-cover opacity-60"
           sizes="100vw"
-          quality={90}
+          quality={80}
         />
-        <div className="absolute inset-0 bg-gradient-to-br from-black/70 via-black/50 to-emerald-900/40 backdrop-blur-sm" />
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-950/80 via-slate-900/60 to-emerald-950/50" />
       </div>
 
-      {/* ========== KONTEN ========== */}
-      <div className="relative z-10 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center min-h-[80vh]">
+      {/* ===== DECORATIVE BLUR ELEMENTS (ringan) ===== */}
+      <div className="absolute top-[-20%] right-[-10%] w-[500px] h-[500px] rounded-full bg-emerald-500/10 blur-3xl pointer-events-none" />
+      <div className="absolute bottom-[-20%] left-[-10%] w-[400px] h-[400px] rounded-full bg-teal-500/10 blur-3xl pointer-events-none" />
+
+      {/* ===== TOMBOL KEMBALI FLOATING (ESTETIK & MINIMALIS) ===== */}
+      <motion.div
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.5, delay: 0.3 }}
+        className="absolute top-6 left-6 md:top-8 md:left-8 z-50"
+      >
+        <Link
+          href="/"
+          className="flex items-center justify-center w-11 h-11 bg-white/5 hover:bg-white/10 backdrop-blur-xl border border-white/10 rounded-full text-white/50 hover:text-white transition-all duration-300 shadow-xl group"
+          aria-label="Kembali ke Beranda"
+          title="Kembali ke Beranda"
+        >
+          <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform duration-300" />
+        </Link>
+      </motion.div>
+
+      {/* ===== KONTEN ===== */}
+      <div className="relative z-10 w-full max-w-6xl mx-auto px-4 sm:px-6 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-center min-h-[90vh]">
           
           {/* ===== BRANDING (Desktop) ===== */}
           <motion.div
-            initial={{ opacity: 0, x: -40 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-            className="hidden lg:flex flex-col items-start space-y-6 text-white"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="hidden lg:block lg:col-span-2 text-white space-y-6"
           >
-            <div className="relative w-40 h-40 drop-shadow-2xl">
+            <div className="relative w-28 h-28">
               <Image
                 src="/logobarru.png"
-                alt="Logo Kabupaten Barru"
+                alt="Logo"
                 fill
                 className="object-contain"
                 priority
               />
             </div>
-
-            <h1 className="text-4xl xl:text-5xl font-black leading-tight">
-              Portal Admin
+            <h1 className="text-4xl font-black leading-tight tracking-tight">
+              Admin Panel
               <br />
-              <span className="bg-gradient-to-r from-emerald-300 via-teal-300 to-emerald-200 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-emerald-300 to-teal-300 bg-clip-text text-transparent">
                 Kecamatan Tanete Riaja
               </span>
             </h1>
-
-            <p className="text-lg text-white/70 max-w-md leading-relaxed">
-              Kelola berita, informasi, dan layanan publik dengan aman, cepat, dan efisien.
+            <p className="text-white/60 text-base max-w-sm leading-relaxed">
+              Kelola berita dan informasi publik dengan aman dan efisien.
             </p>
-
-            <div className="flex flex-wrap items-center gap-4 pt-2">
-              <span className="inline-flex items-center gap-2 text-xs font-medium text-white/60 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full border border-white/10">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                Sistem Aman
+            <div className="flex items-center gap-3 text-xs text-white/40">
+              <span className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                Terenkripsi
               </span>
-              <span className="inline-flex items-center gap-2 text-xs font-medium text-white/60 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full border border-white/10">
-                <ShieldCheck className="w-3.5 h-3.5" />
-                Terenkripsi JWT
+              <span className="w-px h-3 bg-white/10" />
+              <span className="flex items-center gap-1.5">
+                <Shield className="w-3.5 h-3.5" />
+                JWT Secure
               </span>
             </div>
           </motion.div>
@@ -116,78 +137,83 @@ export default function LoginPage() {
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
-            className="w-full max-w-md mx-auto lg:mx-0"
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="lg:col-span-3 w-full max-w-md mx-auto lg:mx-0 lg:ml-auto"
           >
-            <div className="bg-white/10 backdrop-blur-2xl rounded-3xl shadow-2xl p-6 sm:p-8 lg:p-10 border border-white/20">
+            <div className="bg-white/5 backdrop-blur-xl rounded-3xl p-8 border border-white/10 shadow-2xl shadow-black/30">
               
-              {/* Logo Mobile */}
+              {/* Mobile Logo */}
               <div className="flex justify-center lg:hidden mb-6">
-                <div className="relative w-20 h-20 drop-shadow-lg">
-                  <Image
-                    src="/logobarru.png"
-                    alt="Logo Barru"
-                    fill
-                    className="object-contain"
-                  />
+                <div className="relative w-16 h-16">
+                  <Image src="/logobarru.png" alt="Logo" fill className="object-contain" />
                 </div>
               </div>
 
               {/* Header */}
-              <div className="text-center">
-                <h2 className="text-2xl sm:text-3xl font-bold text-white">
-                  Selamat Datang
-                </h2>
-                <p className="mt-1 text-sm text-white/60">
-                  Masuk untuk mengelola berita dan informasi
+              <div className="text-center lg:text-left">
+                <h2 className="text-2xl font-bold text-white">Masuk ke Dashboard</h2>
+                <p className="mt-1 text-sm text-white/40">
+                  Gunakan kredensial yang diberikan oleh admin
                 </p>
               </div>
 
               {/* Form */}
-              <form className="mt-8 space-y-5" onSubmit={handleLogin}>
+              <form className="mt-8 space-y-4" onSubmit={handleLogin}>
                 {error && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="bg-red-500/20 border border-red-400/30 text-red-100 text-sm p-3 rounded-xl text-center font-medium backdrop-blur-sm"
-                  >
+                  <div className="bg-red-500/10 border border-red-400/20 text-red-300 text-sm p-3 rounded-xl text-center">
                     {error}
-                  </motion.div>
+                  </div>
                 )}
 
                 <div>
-                  <label className="block text-sm font-medium text-white/80 mb-1.5">
+                  <label className="block text-xs font-medium text-white/60 uppercase tracking-wider mb-1.5">
                     Username
                   </label>
-                  <input
-                    type="text"
-                    required
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    placeholder="Masukkan username Anda"
-                    className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/40 focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 outline-none transition text-sm backdrop-blur-sm"
-                  />
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                    <input
+                      type="text"
+                      required
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      placeholder="Masukkan username"
+                      className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20 outline-none transition text-sm"
+                    />
+                  </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-white/80 mb-1.5">
+                  <label className="block text-xs font-medium text-white/60 uppercase tracking-wider mb-1.5">
                     Password
                   </label>
-                  <input
-                    type="password"
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Masukkan password Anda"
-                    className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/40 focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 outline-none transition text-sm backdrop-blur-sm"
-                  />
+                  <div className="relative">
+                    <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      required
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Masukkan password"
+                      className="w-full pl-10 pr-12 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20 outline-none transition text-sm"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition text-xs font-medium"
+                    >
+                      {showPassword ? 'Sembunyi' : 'Lihat'}
+                    </button>
+                  </div>
                 </div>
 
-                {/* Lupa Password (UI saja) */}
-                <div className="flex justify-end">
+                <div className="flex items-center justify-between text-xs">
+                  <label className="flex items-center gap-2 text-white/40 cursor-pointer">
+                    <input type="checkbox" className="w-3.5 h-3.5 rounded border-white/20 bg-white/5 accent-emerald-500" />
+                    Ingat saya
+                  </label>
                   <button
                     type="button"
-                    className="text-xs text-white/40 hover:text-white/70 transition-colors"
+                    className="text-white/30 hover:text-white/60 transition"
                     onClick={() => alert('Hubungi admin untuk reset password.')}
                   >
                     Lupa password?
@@ -197,15 +223,15 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 disabled:from-emerald-400 disabled:to-teal-400 text-white font-bold py-3.5 px-4 rounded-xl transition-all duration-300 shadow-lg shadow-emerald-700/30 hover:shadow-emerald-700/50 text-sm"
+                  className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 disabled:opacity-60 text-white font-bold py-3.5 rounded-xl transition text-sm shadow-lg shadow-emerald-600/20 hover:shadow-emerald-600/40 mt-2"
                 >
                   {loading ? (
-                    <span className="flex items-center justify-center gap-3">
-                      <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <span className="flex items-center justify-center gap-2">
+                      <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                       </svg>
-                      Memeriksa Kredensial...
+                      Memproses...
                     </span>
                   ) : (
                     'Masuk ke Dashboard'
@@ -213,32 +239,9 @@ export default function LoginPage() {
                 </button>
               </form>
 
-              {/* ===== TOMBOL KEMBALI - VERSI PROFESIONAL ===== */}
-              <div className="mt-6 pt-4 border-t border-white/10">
-                <Link
-                  href="/"
-                  className="group relative flex items-center justify-center gap-3 w-full sm:w-auto mx-auto text-sm font-medium text-white/60 hover:text-white transition-all duration-300"
-                >
-                  {/* Garis dekoratif kiri (desktop) */}
-                  <span className="hidden sm:block flex-1 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent max-w-12" />
-                  
-                  <span className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all duration-300 backdrop-blur-sm group-hover:scale-105 group-hover:shadow-lg group-hover:shadow-emerald-500/10">
-                    <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform duration-300" />
-                    <span>Kembali</span>
-                    <ChevronRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300" />
-                  </span>
-                  
-                  {/* Garis dekoratif kanan (desktop) */}
-                  <span className="hidden sm:block flex-1 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent max-w-12" />
-                </Link>
-              </div>
-
               {/* Footer */}
-              <div className="mt-6 text-center text-[10px] text-white/20 border-t border-white/5 pt-4">
-                &copy; {new Date().getFullYear()} Pemerintah Kecamatan Tanete Riaja
-                <span className="hidden sm:inline"> • </span>
-                <br className="sm:hidden" />
-                Kabupaten Barru, Sulawesi Selatan
+              <div className="mt-8 pt-4 border-t border-white/5 text-center text-[10px] text-white/15">
+                &copy; {new Date().getFullYear()} Kecamatan Tanete Riaja · Kabupaten Barru
               </div>
             </div>
           </motion.div>
