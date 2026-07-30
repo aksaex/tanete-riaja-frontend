@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Menu, X, ChevronDown } from 'lucide-react'; // atau gunakan SVG manual
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -13,7 +14,8 @@ export default function Navbar() {
 
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
+      const offset = window.scrollY;
+      setScrolled(offset > 20);
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
@@ -27,112 +29,157 @@ export default function Navbar() {
     { href: '/#kontak', label: 'Kontak' },
   ];
 
+  // Cek apakah link aktif (hanya untuk '/' saja, atau bisa diperluas)
   const isActive = (href: string) => {
     if (href === '/') return pathname === '/';
+    // Untuk hash link, kita tidak bisa mendeteksi secara langsung, jadi kita abaikan
     return false;
   };
 
   return (
     <motion.header
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
+      initial={{ y: -100, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-        scrolled
-          ? 'bg-white/95 backdrop-blur-xl shadow-2xl shadow-slate-200/50'
-          : 'bg-white/30 backdrop-blur-md border-b border-white/10'
-      }`}
+      className={`
+        fixed top-0 left-0 right-0 z-50 transition-all duration-300
+        ${
+          scrolled
+            ? 'bg-white/80 backdrop-blur-xl shadow-[0_4px_30px_rgba(0,0,0,0.05)] border-b border-slate-200/30'
+            : 'bg-transparent backdrop-blur-none border-b border-white/10'
+        }
+      `}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-20">
-          <Link href="/" className="flex items-center gap-3">
-            {/* Perbaikan: gunakan width dan height eksplisit */}
-            <Image
-              src="/logobarru.png"
-              alt="Logo Kabupaten Barru"
-              width={48}
-              height={48}
-              className="h-12 w-auto object-contain"
-              priority
-            />
-            <div>
-              <h1 className={`font-black leading-none text-lg sm:text-xl transition-colors duration-300 ${
-                scrolled ? 'text-slate-900' : 'text-white'
-              }`}>
+        <div className="flex items-center justify-between h-20">
+          {/* Logo dan Nama */}
+          <Link
+            href="/"
+            className="flex items-center gap-3 group"
+            aria-label="Kembali ke Beranda"
+          >
+            <div className="relative w-10 h-10 sm:w-12 sm:h-12">
+              <Image
+                src="/logobarru.png"
+                alt="Logo Kabupaten Barru"
+                fill
+                className="object-contain"
+                priority
+              />
+            </div>
+            <div className="hidden sm:block leading-tight">
+              <h1
+                className={`
+                  font-black text-lg sm:text-xl transition-colors duration-300
+                  ${scrolled ? 'text-slate-900' : 'text-white'}
+                `}
+              >
                 TANETE RIAJA
               </h1>
-              <p className={`text-xs font-medium tracking-[0.15em] transition-colors duration-300 ${
-                scrolled ? 'text-emerald-600' : 'text-emerald-200'
-              }`}>
+              <p
+                className={`
+                  text-[10px] sm:text-xs font-semibold tracking-[0.2em] transition-colors duration-300
+                  ${scrolled ? 'text-emerald-600' : 'text-emerald-200/80'}
+                `}
+              >
                 KABUPATEN BARRU
               </p>
             </div>
           </Link>
 
-          {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-1 text-sm font-medium">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`px-4 py-2 rounded-xl transition-all duration-300 ${
-                  isActive(link.href)
-                    ? 'text-emerald-600 bg-emerald-50'
-                    : `hover:text-emerald-600 hover:bg-emerald-50/50 ${
-                        scrolled ? 'text-slate-600' : 'text-white/90'
-                      }`
-                }`}
-              >
-                {link.label}
-              </Link>
-            ))}
-          </nav>
-
-          {/* Hamburger */}
-          <button
-            onClick={() => setIsOpen(!isOpen)}
-            className="md:hidden p-2 rounded-xl hover:bg-white/10 transition"
-            aria-label={isOpen ? 'Tutup menu' : 'Buka menu'}
-          >
-            <svg className={`w-6 h-6 transition-colors duration-300 ${
-              scrolled ? 'text-slate-700' : 'text-white'
-            }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              {isOpen ? (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              ) : (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              )}
-            </svg>
-          </button>
-        </div>
-
-        {/* Mobile Menu */}
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.2 }}
-            className="md:hidden py-4 border-t border-white/20"
-          >
-            <nav className="flex flex-col gap-1 text-sm font-medium">
-              {navLinks.map((link) => (
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center gap-1" aria-label="Navigasi utama">
+            {navLinks.map((link) => {
+              const active = isActive(link.href);
+              return (
                 <Link
                   key={link.href}
                   href={link.href}
-                  onClick={() => setIsOpen(false)}
-                  className={`px-4 py-3 rounded-xl transition ${
-                    isActive(link.href)
-                      ? 'text-emerald-600 bg-emerald-50'
-                      : 'text-white/90 hover:text-emerald-200 hover:bg-white/10'
-                  }`}
+                  className={`
+                    relative px-4 py-2 rounded-full text-sm font-medium transition-all duration-200
+                    ${
+                      active
+                        ? 'text-emerald-700 bg-emerald-50/80'
+                        : scrolled
+                        ? 'text-slate-600 hover:text-emerald-600 hover:bg-emerald-50/50'
+                        : 'text-white/90 hover:text-white hover:bg-white/10'
+                    }
+                  `}
                 >
                   {link.label}
+                  {active && (
+                    <motion.span
+                      layoutId="navbar-indicator"
+                      className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-0.5 bg-emerald-500 rounded-full"
+                      transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
+                    />
+                  )}
                 </Link>
-              ))}
-            </nav>
+              );
+            })}
+          </nav>
+
+          {/* Mobile Menu Toggle */}
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className={`
+              md:hidden p-2 rounded-xl transition-colors duration-300
+              ${scrolled ? 'text-slate-700 hover:bg-slate-100' : 'text-white hover:bg-white/10'}
+            `}
+            aria-label={isOpen ? 'Tutup menu' : 'Buka menu'}
+            aria-expanded={isOpen}
+          >
+            {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile Menu - AnimatePresence for smooth exit */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            className={`
+              md:hidden overflow-hidden
+              ${scrolled ? 'bg-white/95 backdrop-blur-xl' : 'bg-slate-900/80 backdrop-blur-xl'}
+            `}
+          >
+            <div className="px-4 py-4 space-y-1 border-t border-slate-200/20">
+              {navLinks.map((link, index) => {
+                const active = isActive(link.href);
+                return (
+                  <motion.div
+                    key={link.href}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                  >
+                    <Link
+                      href={link.href}
+                      onClick={() => setIsOpen(false)}
+                      className={`
+                        block px-4 py-3 rounded-xl text-base font-medium transition-all duration-200
+                        ${
+                          active
+                            ? 'text-emerald-700 bg-emerald-50/80'
+                            : scrolled
+                            ? 'text-slate-700 hover:bg-slate-50'
+                            : 'text-white/90 hover:bg-white/10'
+                        }
+                      `}
+                    >
+                      {link.label}
+                    </Link>
+                  </motion.div>
+                );
+              })}
+            </div>
           </motion.div>
         )}
-      </div>
+      </AnimatePresence>
     </motion.header>
   );
 }

@@ -1,4 +1,3 @@
-// src/app/berita/[slug]/page.tsx
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -23,6 +22,41 @@ interface Berita {
   penulis?: string;
 }
 
+// Komponen untuk kartu berita terkait (agar useState tidak berada dalam loop)
+function RelatedNewsCard({ item }: { item: Berita }) {
+  const [imgSrc, setImgSrc] = useState(item.gambar || '/pemandagan.png');
+
+  return (
+    <Link
+      href={`/berita/${item.slug}`}
+      className="group bg-white border border-slate-200 rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col"
+    >
+      <div className="h-44 overflow-hidden relative bg-slate-100">
+        <img
+          src={imgSrc}
+          alt={item.judul}
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+          onError={() => setImgSrc('/pemandagan.png')}
+        />
+        <span className="absolute top-3 left-3 bg-emerald-700 text-white text-[10px] font-extrabold px-2.5 py-1 rounded-full">
+          {item.kategori}
+        </span>
+      </div>
+      <div className="p-5 flex flex-col flex-grow">
+        <span className="text-[11px] text-slate-400 font-semibold mb-2">
+          {item.tanggal}
+        </span>
+        <h4 className="font-extrabold text-slate-900 text-base line-clamp-2 leading-snug group-hover:text-emerald-700 transition-colors mb-2">
+          {item.judul}
+        </h4>
+        <p className="text-xs text-slate-600 line-clamp-2 mt-auto">
+          {item.ringkasan}
+        </p>
+      </div>
+    </Link>
+  );
+}
+
 export default function DetailBeritaPage() {
   const params = useParams();
   const router = useRouter();
@@ -32,6 +66,7 @@ export default function DetailBeritaPage() {
   const [beritaTerkait, setBeritaTerkait] = useState<Berita[]>([]);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
+  const [imgError, setImgError] = useState(false); // Untuk gambar utama
 
   useEffect(() => {
     if (!slug) return;
@@ -39,7 +74,6 @@ export default function DetailBeritaPage() {
     const fetchDetailBerita = async () => {
       setLoading(true);
       try {
-        // Ambil detail berita berdasarkan slug
         const res = await fetch(`${API_URL}/berita/${slug}`, { cache: 'no-store' });
         if (res.ok) {
           const json = await res.json();
@@ -48,12 +82,10 @@ export default function DetailBeritaPage() {
           }
         }
 
-        // Ambil daftar berita terkait (rekomendasi berita lainnya)
         const resAll = await fetch(`${API_URL}/berita`, { cache: 'no-store' });
         if (resAll.ok) {
           const jsonAll = await resAll.json();
           if (jsonAll.data) {
-            // Filter agar berita yang sedang dibaca tidak muncul di berita terkait
             const filtered = jsonAll.data.filter((item: Berita) => item.slug !== slug);
             setBeritaTerkait(filtered.slice(0, 3));
           }
@@ -68,7 +100,6 @@ export default function DetailBeritaPage() {
     fetchDetailBerita();
   }, [slug]);
 
-  // Fungsi Salin Link Berita
   const handleCopyLink = () => {
     if (typeof window !== 'undefined') {
       navigator.clipboard.writeText(window.location.href);
@@ -77,7 +108,6 @@ export default function DetailBeritaPage() {
     }
   };
 
-  // Fungsi Bagikan ke WhatsApp
   const handleShareWA = () => {
     if (typeof window !== 'undefined' && berita) {
       const text = `*${berita.judul}*\n\nBaca selengkapnya di Portal Resmi Kecamatan Tanete Riaja:\n${window.location.href}`;
@@ -85,7 +115,6 @@ export default function DetailBeritaPage() {
     }
   };
 
-  // Fungsi Bagikan ke Facebook
   const handleShareFB = () => {
     if (typeof window !== 'undefined') {
       window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`, '_blank');
@@ -97,7 +126,6 @@ export default function DetailBeritaPage() {
       <Navbar />
 
       <main className="flex-grow pt-24 pb-20">
-        {/* Skeleton Loading State */}
         {loading ? (
           <div className="max-w-4xl mx-auto px-4 sm:px-6 py-12 space-y-6 animate-pulse">
             <div className="h-4 bg-slate-200 rounded w-1/3"></div>
@@ -111,7 +139,6 @@ export default function DetailBeritaPage() {
             </div>
           </div>
         ) : !berita ? (
-          /* State Berita Tidak Ditemukan */
           <div className="max-w-xl mx-auto px-4 py-24 text-center">
             <div className="w-20 h-20 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl font-black">
               🔍
@@ -128,9 +155,8 @@ export default function DetailBeritaPage() {
             </Link>
           </div>
         ) : (
-          /* ================= ARTIKEL BERITA LENGKAP ================= */
           <article className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-            {/* Breadcrumb Navigasi */}
+            {/* Breadcrumb */}
             <motion.nav
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -149,14 +175,13 @@ export default function DetailBeritaPage() {
               </span>
             </motion.nav>
 
-            {/* Header Artikel */}
+            {/* Header */}
             <motion.header
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
               className="space-y-6 mb-10"
             >
-              {/* Meta Top: Kategori & Tanggal */}
               <div className="flex flex-wrap items-center gap-3">
                 <span className="bg-emerald-700 text-white text-xs font-black uppercase tracking-wider px-3.5 py-1.5 rounded-full shadow-md">
                   {berita.kategori}
@@ -170,12 +195,10 @@ export default function DetailBeritaPage() {
                 </span>
               </div>
 
-              {/* Judul Utama Berita */}
               <h1 className="text-3xl sm:text-5xl font-black text-slate-900 leading-[1.15] tracking-tight">
                 {berita.judul}
               </h1>
 
-              {/* Author / Penulis Badge */}
               <div className="flex items-center justify-between border-y border-slate-200 py-4 my-6">
                 <div className="flex items-center gap-3">
                   <div className="relative w-10 h-10 rounded-full overflow-hidden bg-slate-100 border border-slate-200 flex-shrink-0">
@@ -184,6 +207,7 @@ export default function DetailBeritaPage() {
                       alt="Logo Barru"
                       fill
                       className="object-contain p-1"
+                      sizes="40px"
                     />
                   </div>
                   <div>
@@ -196,7 +220,6 @@ export default function DetailBeritaPage() {
                   </div>
                 </div>
 
-                {/* Tombol Akses Bagikan Cepat */}
                 <div className="flex items-center gap-2">
                   <button
                     onClick={handleShareWA}
@@ -218,7 +241,7 @@ export default function DetailBeritaPage() {
               </div>
             </motion.header>
 
-            {/* Foto Utama Berita (Featured Image) */}
+            {/* Gambar Utama */}
             <motion.div
               initial={{ opacity: 0, scale: 0.98 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -226,30 +249,27 @@ export default function DetailBeritaPage() {
               className="relative w-full h-[300px] sm:h-[480px] rounded-3xl overflow-hidden shadow-2xl border border-slate-200 mb-12 bg-slate-900"
             >
               <img
-                src={berita.gambar}
+                src={imgError ? '/pemandagan.png' : berita.gambar}
                 alt={berita.judul}
                 className="w-full h-full object-cover object-center"
+                onError={() => setImgError(true)}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-slate-950/40 via-transparent to-transparent pointer-events-none" />
             </motion.div>
 
-            {/* Grid Layout: Konten Utama & Sidebar Informasi */}
+            {/* Grid Konten */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-              {/* Kolom Kiri: Isi Artikel (Lg: 8 cols) */}
               <div className="lg:col-span-8 space-y-8">
-                {/* Ringkasan Singkat / Highlight Box */}
                 <div className="bg-emerald-50/80 border-l-4 border-emerald-700 p-6 rounded-r-2xl text-slate-800 text-lg sm:text-xl font-bold leading-relaxed shadow-sm">
                   {berita.ringkasan}
                 </div>
 
-                {/* Body Konten Utama */}
                 <div className="prose prose-lg max-w-none text-slate-700 leading-relaxed font-normal space-y-6 text-base sm:text-lg">
                   <div className="whitespace-pre-line leading-relaxed">
                     {berita.konten}
                   </div>
                 </div>
 
-                {/* Footer Artikel & Share Bar */}
                 <div className="pt-10 border-t border-slate-200 space-y-6">
                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
                     <div>
@@ -290,9 +310,8 @@ export default function DetailBeritaPage() {
                 </div>
               </div>
 
-              {/* Kolom Kanan: Sidebar Informasi Kantor & Pemetaan (Lg: 4 cols) */}
+              {/* Sidebar */}
               <aside className="lg:col-span-4 space-y-6">
-                {/* Card Kontak Informasi Kecamatan */}
                 <div className="bg-slate-900 text-white p-6 rounded-3xl shadow-xl relative overflow-hidden border border-slate-800">
                   <div className="relative z-10 space-y-4">
                     <div className="flex items-center gap-3">
@@ -302,6 +321,7 @@ export default function DetailBeritaPage() {
                           alt="Logo Barru"
                           fill
                           className="object-contain"
+                          sizes="32px"
                         />
                       </div>
                       <div>
@@ -309,11 +329,9 @@ export default function DetailBeritaPage() {
                         <h4 className="text-sm font-extrabold text-white">Kecamatan Tanete Riaja</h4>
                       </div>
                     </div>
-
                     <p className="text-xs text-slate-300 leading-relaxed border-t border-slate-800 pt-3">
                       Pusat pelayanan masyarakat & informasi berita resmi pemerintahan lokal.
                     </p>
-
                     <div className="space-y-2 text-xs text-slate-300 pt-2">
                       <div className="flex items-start gap-2">
                         <span className="text-emerald-400 font-bold">📍</span>
@@ -324,7 +342,6 @@ export default function DetailBeritaPage() {
                         <span>Senin - Jumat (08.00 - 16.00 WITA)</span>
                       </div>
                     </div>
-
                     <Link
                       href="/#pemetaan"
                       className="block text-center w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs py-3 rounded-xl transition shadow-lg shadow-emerald-950/50 mt-4"
@@ -334,7 +351,6 @@ export default function DetailBeritaPage() {
                   </div>
                 </div>
 
-                {/* Banner Portal Pelayanan */}
                 <div className="bg-gradient-to-br from-emerald-800 to-teal-900 text-white p-6 rounded-3xl shadow-lg border border-emerald-700/50">
                   <h4 className="text-lg font-extrabold mb-2">Butuh Layanan Administrasi?</h4>
                   <p className="text-xs text-emerald-100 leading-relaxed mb-4">
@@ -350,7 +366,7 @@ export default function DetailBeritaPage() {
               </aside>
             </div>
 
-            {/* ================= SEKSI BERITA TERKAIT / REKOMENDASI ================= */}
+            {/* Berita Terkait – menggunakan komponen terpisah agar hooks aman */}
             {beritaTerkait.length > 0 && (
               <section className="mt-20 pt-12 border-t border-slate-200">
                 <div className="flex justify-between items-end mb-8">
@@ -371,34 +387,8 @@ export default function DetailBeritaPage() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {beritaTerkait.map((item, index) => (
-                    <Link
-                      key={item._id || item.id || index}
-                      href={`/berita/${item.slug}`}
-                      className="group bg-white border border-slate-200 rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col"
-                    >
-                      <div className="h-44 overflow-hidden relative bg-slate-100">
-                        <img
-                          src={item.gambar}
-                          alt={item.judul}
-                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                        />
-                        <span className="absolute top-3 left-3 bg-emerald-700 text-white text-[10px] font-extrabold px-2.5 py-1 rounded-full">
-                          {item.kategori}
-                        </span>
-                      </div>
-                      <div className="p-5 flex flex-col flex-grow">
-                        <span className="text-[11px] text-slate-400 font-semibold mb-2">
-                          {item.tanggal}
-                        </span>
-                        <h4 className="font-extrabold text-slate-900 text-base line-clamp-2 leading-snug group-hover:text-emerald-700 transition-colors mb-2">
-                          {item.judul}
-                        </h4>
-                        <p className="text-xs text-slate-600 line-clamp-2 mt-auto">
-                          {item.ringkasan}
-                        </p>
-                      </div>
-                    </Link>
+                  {beritaTerkait.map((item) => (
+                    <RelatedNewsCard key={item._id || item.id || item.slug} item={item} />
                   ))}
                 </div>
               </section>

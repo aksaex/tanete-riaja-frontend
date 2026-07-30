@@ -1,69 +1,357 @@
+/* ============================================================
+   GLOBALS.CSS – Revisi Premium untuk Kecamatan Tanete Riaja
+   Design System: Serenity Government
+   ============================================================ */
+
 @import "tailwindcss";
 
+/* ============================================================
+   1. ROOT VARIABLES (Warna & Font)
+   ============================================================ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Primary - Emerald */
+  --color-emerald-50:  #ECFDF5;
+  --color-emerald-100: #D1FAE5;
+  --color-emerald-200: #A7F3D0;
+  --color-emerald-300: #6EE7B7;
+  --color-emerald-400: #34D399;
+  --color-emerald-500: #10B981;
+  --color-emerald-600: #059669;
+  --color-emerald-700: #047857;
+  --color-emerald-800: #065F46;
+  --color-emerald-900: #064E3B;
+
+  /* Secondary - Teal */
+  --color-teal-50:  #F0FDFA;
+  --color-teal-100: #CCFBF1;
+  --color-teal-200: #99F6E4;
+  --color-teal-300: #5EEAD4;
+  --color-teal-400: #2DD4BF;
+  --color-teal-500: #14B8A6;
+  --color-teal-600: #0D9488;
+  --color-teal-700: #0F766E;
+  --color-teal-800: #115E59;
+  --color-teal-900: #134E4A;
+
+  /* Accent - Amber (lembut) */
+  --color-amber-100: #FEF3C7;
+  --color-amber-200: #FDE68A;
+  --color-amber-300: #FCD34D;
+  --color-amber-400: #FBBF24;
+  --color-amber-500: #F59E0B;
+
+  /* Neutral - Slate */
+  --color-slate-50:  #F8FAFC;
+  --color-slate-100: #F1F5F9;
+  --color-slate-200: #E2E8F0;
+  --color-slate-300: #CBD5E1;
+  --color-slate-400: #94A3B8;
+  --color-slate-500: #64748B;
+  --color-slate-600: #475569;
+  --color-slate-700: #334155;
+  --color-slate-800: #1E293B;
+  --color-slate-900: #0F172A;
+
+  /* Background & Foreground */
+  --background: #FFFFFF;
+  --foreground: var(--color-slate-900);
+
+  /* Font */
+  --font-sans: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-geist-mono), monospace;
+
+  /* Radius */
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  --radius-2xl: 2rem;
+  --radius-full: 9999px;
+
+  /* Shadow custom */
+  --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.04);
+  --shadow-medium: 0 8px 30px rgba(0, 0, 0, 0.06);
+  --shadow-strong: 0 16px 48px rgba(0, 0, 0, 0.08);
+  --shadow-glow: 0 0 40px rgba(16, 185, 129, 0.15);
+
+  /* Transisi */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-bounce: 500ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
+/* Dark mode (opsional) */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: var(--color-slate-900);
+    --foreground: var(--color-slate-50);
+  }
+}
+
+/* ============================================================
+   2. TAILWIND THEME EXTENSION
+   ============================================================ */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-primary: var(--color-emerald-600);
+  --color-primary-light: var(--color-emerald-400);
+  --color-primary-dark: var(--color-emerald-800);
+  --color-secondary: var(--color-teal-600);
+  --color-accent: var(--color-amber-400);
+
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+  --radius-2xl: var(--radius-2xl);
+  --radius-full: var(--radius-full);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ============================================================
+   3. BASE STYLES
+   ============================================================ */
+html {
+  scroll-behavior: smooth;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  font-feature-settings: "ss01", "ss02", "cv01", "cv02";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  line-height: 1.6;
 }
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+::selection {
+  background: var(--color-emerald-200);
+  color: var(--color-emerald-900);
+}
 
-/* Animasi Shimmer untuk Skeleton */
+*:focus-visible {
+  outline: 2px solid var(--color-emerald-500);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* ============================================================
+   4. UTILITY CLASSES (dengan @layer utilities)
+   ============================================================ */
+@layer utilities {
+  /* Glassmorphism */
+  .glass {
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .glass-dark {
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  /* Shadow premium */
+  .shadow-soft {
+    box-shadow: var(--shadow-soft);
+  }
+  .shadow-medium {
+    box-shadow: var(--shadow-medium);
+  }
+  .shadow-strong {
+    box-shadow: var(--shadow-strong);
+  }
+  .shadow-glow {
+    box-shadow: var(--shadow-glow);
+  }
+
+  /* Gradien */
+  .gradient-primary {
+    background: linear-gradient(135deg, var(--color-emerald-500), var(--color-teal-500));
+  }
+  .gradient-primary-soft {
+    background: linear-gradient(135deg, var(--color-emerald-50), var(--color-teal-50));
+  }
+  .gradient-hero {
+    background: linear-gradient(135deg, rgba(5, 150, 105, 0.85), rgba(13, 148, 136, 0.75));
+  }
+  .gradient-text {
+    background: linear-gradient(135deg, var(--color-emerald-600), var(--color-teal-500));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Badge & Card (bisa langsung pakai class ini) */
+  .badge-premium {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.025em;
+    background: var(--color-emerald-50);
+    color: var(--color-emerald-700);
+    border: 1px solid var(--color-emerald-200);
+  }
+
+  .card-premium {
+    background: white;
+    border-radius: var(--radius-2xl);
+    border: 1px solid var(--color-slate-100);
+    box-shadow: var(--shadow-soft);
+    transition: all var(--transition-base);
+  }
+  .card-premium:hover {
+    box-shadow: var(--shadow-medium);
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--radius-full);
+    font-weight: 600;
+    color: white;
+    background: linear-gradient(135deg, var(--color-emerald-500), var(--color-teal-500));
+    transition: all var(--transition-base);
+  }
+  .btn-primary:hover {
+    box-shadow: var(--shadow-glow);
+    transform: scale(1.02);
+  }
+}
+
+/* ============================================================
+   5. ANIMASI
+   ============================================================ */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.animate-fade-in {
+  animation: fadeIn 0.6s ease-out forwards;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-slide-up {
+  animation: slideUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-slide-down {
+  animation: slideDown 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+.animate-scale-in {
+  animation: scaleIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
 @keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
 }
-
 .animate-shimmer {
   background: linear-gradient(
     90deg,
-    #f1f5f9 0%,
-    #e2e8f0 50%,
-    #f1f5f9 100%
+    var(--color-slate-100) 0%,
+    var(--color-slate-200) 30%,
+    var(--color-slate-100) 60%,
+    var(--color-slate-200) 90%,
+    var(--color-slate-100) 100%
   );
   background-size: 200% 100%;
-  animation: shimmer 1.5s ease-in-out infinite;
+  animation: shimmer 2s ease-in-out infinite;
 }
 
-/* Custom Scrollbar */
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+.animate-pulse-soft {
+  animation: pulse-soft 3s ease-in-out infinite;
+}
+
+/* ============================================================
+   6. CUSTOM SCROLLBAR
+   ============================================================ */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
+  height: 6px;
 }
-
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: var(--color-slate-100);
+  border-radius: var(--radius-full);
 }
-
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(to bottom, #10b981, #14b8a6);
-  border-radius: 9999px;
+  background: linear-gradient(to bottom, var(--color-emerald-400), var(--color-teal-400));
+  border-radius: var(--radius-full);
+  transition: background var(--transition-base);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(to bottom, var(--color-emerald-500), var(--color-teal-500));
+}
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-emerald-400) var(--color-slate-100);
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #059669;
+/* ============================================================
+   7. REDUCE MOTION
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ============================================================
+   8. KONTAINER PREMIUM (opsional)
+   ============================================================ */
+.container-premium {
+  max-width: 80rem;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+@media (min-width: 640px) {
+  .container-premium {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+@media (min-width: 1024px) {
+  .container-premium {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
 }
