@@ -1,4 +1,3 @@
-// app/berita/[slug]/layout.tsx
 import { Metadata } from 'next';
 import { API_URL } from '@/lib/api';
 
@@ -6,45 +5,74 @@ type Props = {
   params: Promise<{ slug: string }>;
 };
 
-// Fungsi pembantu untuk memastikan URL selalu absolut
+/**
+ * Fungsi untuk mendapatkan URL absolut gambar
+ */
 function getAbsoluteImageUrl(imageUrl: string | null | undefined): string {
   if (!imageUrl) {
     return 'https://taneteriaja.vercel.app/pemandagan.png';
   }
-  // Jika URL sudah absolut (http atau https), gunakan langsung
   if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
     return imageUrl;
   }
-  // Jika relatif, gabungkan dengan base URL
   return `https://taneteriaja.vercel.app${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}`;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   try {
-    const resolvedParams = await params;
-    const slug = resolvedParams.slug;
+    const { slug } = await params;
 
+    // Fetch data berita
     const res = await fetch(`${API_URL}/berita/${slug}`, {
       cache: 'no-store',
     });
 
+    // Jika response tidak OK (termasuk 404), kita TIDAK panggil notFound()
+    // Tapi kita tetap berikan metadata default agar halaman tetap bisa diakses
     if (!res.ok) {
+      console.warn(`⚠️ Berita dengan slug "${slug}" tidak ditemukan (status ${res.status})`);
       return {
         title: 'Berita Tidak Ditemukan | Kecamatan Tanete Riaja',
-        description: 'Maaf, berita yang Anda cari tidak tersedia.',
+        description: 'Maaf, artikel yang Anda cari tidak tersedia saat ini.',
+        openGraph: {
+          title: 'Berita Tidak Ditemukan',
+          description: 'Artikel tidak tersedia',
+          images: [
+            {
+              url: 'https://taneteriaja.vercel.app/pemandagan.png',
+              width: 1200,
+              height: 630,
+              alt: 'Gambar default',
+            },
+          ],
+        },
       };
     }
 
     const json = await res.json();
     const berita = json?.data;
 
+    // Jika data berita null, juga berikan metadata default
     if (!berita) {
       return {
         title: 'Berita Tidak Ditemukan | Kecamatan Tanete Riaja',
+        description: 'Maaf, artikel yang Anda cari tidak tersedia saat ini.',
+        openGraph: {
+          title: 'Berita Tidak Ditemukan',
+          description: 'Artikel tidak tersedia',
+          images: [
+            {
+              url: 'https://taneteriaja.vercel.app/pemandagan.png',
+              width: 1200,
+              height: 630,
+              alt: 'Gambar default',
+            },
+          ],
+        },
       };
     }
 
-    // Gunakan fungsi pembantu untuk mendapatkan URL absolut
+    // Metadata lengkap dengan data berita
     const imageUrl = getAbsoluteImageUrl(berita.gambar);
 
     return {
@@ -58,7 +86,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         type: 'article',
         images: [
           {
-            url: imageUrl, // URL sudah absolut
+            url: imageUrl,
             width: 1200,
             height: 630,
             alt: berita.judul,
@@ -69,17 +97,22 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         card: 'summary_large_image',
         title: berita.judul,
         description: berita.ringkasan,
-        images: [imageUrl], // URL sudah absolut
+        images: [imageUrl],
       },
     };
   } catch (error) {
-    console.error('Fatal error generateMetadata:', error);
+    console.error('❌ Error generateMetadata:', error);
     return {
       title: 'Berita Kecamatan Tanete Riaja',
+      description: 'Portal berita resmi Kecamatan Tanete Riaja.',
     };
   }
 }
 
+/**
+ * Layout untuk halaman detail berita
+ * Anak-anak (page.tsx) akan menangani tampilan "tidak ditemukan" secara client-side
+ */
 export default function DetailBeritaLayout({
   children,
 }: {

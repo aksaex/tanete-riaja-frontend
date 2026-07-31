@@ -1,8 +1,8 @@
-//app/berita/[slug]/page.tsx
-
+// src/app/berita/[slug]/page.tsx
 'use client';
+
 import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import Navbar from '@/components/Navbar';
@@ -10,7 +10,7 @@ import Footer from '@/components/Footer';
 import { NewsCard } from '@/components/NewsCard';
 import { API_URL } from '@/lib/api';
 import { motion } from 'framer-motion';
-import { Calendar, ChevronLeft, Share2, Copy, Check, MessageCircle } from 'lucide-react'; // ❌ Hapus Facebook
+import { Calendar, ChevronLeft, Share2, Copy, Check, MessageCircle } from 'lucide-react';
 
 interface Berita {
   _id?: string;
@@ -27,12 +27,12 @@ interface Berita {
 
 export default function DetailBeritaPage() {
   const params = useParams();
-  const router = useRouter();
   const slug = params?.slug as string;
 
   const [berita, setBerita] = useState<Berita | null>(null);
   const [beritaTerkait, setBeritaTerkait] = useState<Berita[]>([]);
   const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
   const [copied, setCopied] = useState(false);
   const [imgError, setImgError] = useState(false);
 
@@ -41,21 +41,31 @@ export default function DetailBeritaPage() {
 
     const fetchDetail = async () => {
       setLoading(true);
+      setNotFound(false);
       try {
+        // Ambil detail berita
         const res = await fetch(`${API_URL}/berita/${slug}`, { cache: 'no-store' });
-        if (res.ok) {
-          const json = await res.json();
-          if (json.data) {
-            setBerita(json.data);
-          } else {
-            router.push('/berita');
-            return;
-          }
-        } else {
-          router.push('/berita');
+
+        if (res.status === 404) {
+          setNotFound(true);
+          setLoading(false);
           return;
         }
 
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+
+        const json = await res.json();
+        if (json.data) {
+          setBerita(json.data);
+        } else {
+          setNotFound(true);
+          setLoading(false);
+          return;
+        }
+
+        // Ambil berita terkait (3 lainnya)
         const resAll = await fetch(`${API_URL}/berita`, { cache: 'no-store' });
         if (resAll.ok) {
           const jsonAll = await resAll.json();
@@ -68,14 +78,14 @@ export default function DetailBeritaPage() {
         }
       } catch (error) {
         console.error('Gagal mengambil detail berita:', error);
-        router.push('/berita');
+        setNotFound(true);
       } finally {
         setLoading(false);
       }
     };
 
     fetchDetail();
-  }, [slug, router]);
+  }, [slug]);
 
   const handleCopyLink = () => {
     if (typeof window !== 'undefined') {
@@ -92,13 +102,13 @@ export default function DetailBeritaPage() {
     }
   };
 
-  // 🔥 Ganti Facebook dengan fungsi share ke FB menggunakan URL
   const handleShareFB = () => {
     if (typeof window !== 'undefined') {
       window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`, '_blank');
     }
   };
 
+  // Loading state
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col bg-slate-50">
@@ -121,18 +131,33 @@ export default function DetailBeritaPage() {
     );
   }
 
-  if (!berita) {
+  // Not Found state
+  if (notFound || !berita) {
     return (
       <div className="min-h-screen flex flex-col bg-slate-50">
         <Navbar />
         <main className="flex-grow pt-24 pb-20 flex items-center justify-center">
-          <div className="text-center">
-            <div className="text-6xl mb-4">🔍</div>
-            <h1 className="text-2xl font-bold text-slate-900">Berita Tidak Ditemukan</h1>
-            <p className="text-slate-500 mt-2">Artikel yang Anda cari mungkin telah dihapus atau dipindahkan.</p>
-            <Link href="/berita" className="mt-6 inline-flex items-center gap-2 text-emerald-600 hover:text-emerald-700 font-medium">
-              <ChevronLeft className="w-4 h-4" /> Kembali ke Daftar Berita
-            </Link>
+          <div className="text-center max-w-md mx-auto px-4">
+            <div className="text-7xl mb-6">🔍</div>
+            <h1 className="text-3xl font-bold text-slate-900">Berita Tidak Ditemukan</h1>
+            <p className="text-slate-500 mt-2 text-base">
+              Maaf, artikel yang Anda cari tidak tersedia atau telah dihapus.
+            </p>
+            <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
+              <Link
+                href="/berita"
+                className="inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-6 py-3 rounded-xl transition shadow-md hover:shadow-lg"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                Kembali ke Daftar Berita
+              </Link>
+              <Link
+                href="/"
+                className="inline-flex items-center justify-center gap-2 bg-white hover:bg-slate-50 text-slate-700 font-semibold px-6 py-3 rounded-xl border border-slate-200 transition shadow-sm hover:shadow"
+              >
+                Beranda
+              </Link>
+            </div>
           </div>
         </main>
         <Footer />
@@ -140,6 +165,7 @@ export default function DetailBeritaPage() {
     );
   }
 
+  // ===== RENDER DETAIL BERITA =====
   return (
     <div className="min-h-screen flex flex-col bg-slate-50">
       <Navbar />
@@ -152,11 +178,17 @@ export default function DetailBeritaPage() {
             animate={{ opacity: 1, y: 0 }}
             className="flex items-center gap-2 text-sm text-slate-500 mb-8 font-medium"
           >
-            <Link href="/" className="hover:text-emerald-600 transition">Beranda</Link>
+            <Link href="/" className="hover:text-emerald-600 transition">
+              Beranda
+            </Link>
             <span>/</span>
-            <Link href="/berita" className="hover:text-emerald-600 transition">Berita</Link>
+            <Link href="/berita" className="hover:text-emerald-600 transition">
+              Berita
+            </Link>
             <span>/</span>
-            <span className="text-slate-900 font-semibold truncate max-w-[200px]">{berita.judul}</span>
+            <span className="text-slate-900 font-semibold truncate max-w-[200px]">
+              {berita.judul}
+            </span>
           </motion.nav>
 
           {/* Header */}
@@ -185,13 +217,20 @@ export default function DetailBeritaPage() {
             <div className="flex flex-wrap items-center justify-between gap-4 border-y border-slate-200 py-4">
               <div className="flex items-center gap-3">
                 <div className="relative w-10 h-10 rounded-full overflow-hidden bg-slate-100 border border-slate-200 flex-shrink-0">
-                  <Image src="/logobarru.png" alt="Logo Barru" fill className="object-contain p-1" />
+                  <Image
+                    src="/logobarru.png"
+                    alt="Logo Barru"
+                    fill
+                    className="object-contain p-1"
+                  />
                 </div>
                 <div>
                   <p className="text-xs font-bold text-slate-900 uppercase">
                     {berita.penulis || 'Humas Kecamatan Tanete Riaja'}
                   </p>
-                  <p className="text-[11px] text-slate-500 font-medium">Pemerintah Kabupaten Barru</p>
+                  <p className="text-[11px] text-slate-500 font-medium">
+                    Pemerintah Kabupaten Barru
+                  </p>
                 </div>
               </div>
 
@@ -203,7 +242,6 @@ export default function DetailBeritaPage() {
                   <MessageCircle className="w-4 h-4" />
                   <span className="hidden sm:inline">WhatsApp</span>
                 </button>
-                {/* 🔥 Tombol Facebook dengan ikon Share2 (atau bisa pakai SVG manual) */}
                 <button
                   onClick={handleShareFB}
                   className="p-2.5 rounded-xl bg-blue-50 text-blue-700 hover:bg-blue-100 transition text-xs font-bold flex items-center gap-1.5"
@@ -241,14 +279,17 @@ export default function DetailBeritaPage() {
           {/* Konten */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
             <div className="lg:col-span-8 space-y-8">
+              {/* Ringkasan */}
               <div className="bg-emerald-50/80 border-l-4 border-emerald-700 p-6 rounded-r-2xl text-slate-800 text-lg font-bold leading-relaxed shadow-sm">
                 {berita.ringkasan}
               </div>
 
+              {/* Konten Lengkap */}
               <div className="prose prose-lg max-w-none text-slate-700 leading-relaxed space-y-6 text-base sm:text-lg">
                 <div className="whitespace-pre-line leading-relaxed">{berita.konten}</div>
               </div>
 
+              {/* Bagikan & Kembali */}
               <div className="pt-10 border-t border-slate-200 space-y-6">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
                   <div>
@@ -278,7 +319,10 @@ export default function DetailBeritaPage() {
                   </div>
                 </div>
 
-                <Link href="/berita" className="inline-flex items-center gap-2 text-emerald-700 hover:text-emerald-800 font-bold text-sm group">
+                <Link
+                  href="/berita"
+                  className="inline-flex items-center gap-2 text-emerald-700 hover:text-emerald-800 font-bold text-sm group"
+                >
                   <ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
                   Kembali ke Daftar Berita
                 </Link>
@@ -294,7 +338,9 @@ export default function DetailBeritaPage() {
                       <Image src="/logobarru.png" alt="Logo Barru" fill className="object-contain" />
                     </div>
                     <div>
-                      <p className="text-[10px] font-black uppercase text-emerald-400 tracking-wider">Pemerintah Kabupaten Barru</p>
+                      <p className="text-[10px] font-black uppercase text-emerald-400 tracking-wider">
+                        Pemerintah Kabupaten Barru
+                      </p>
                       <h4 className="text-sm font-bold text-white">Kecamatan Tanete Riaja</h4>
                     </div>
                   </div>
@@ -319,7 +365,10 @@ export default function DetailBeritaPage() {
                 <p className="text-xs text-emerald-100 leading-relaxed mb-4">
                   Urus surat keterangan, verifikasi kependudukan, atau izin usaha mikro tanpa antre.
                 </p>
-                <Link href="/#kontak" className="inline-block bg-white text-emerald-900 font-black text-xs px-4 py-2.5 rounded-xl hover:bg-emerald-50 transition shadow-md">
+                <Link
+                  href="/#kontak"
+                  className="inline-block bg-white text-emerald-900 font-black text-xs px-4 py-2.5 rounded-xl hover:bg-emerald-50 transition shadow-md"
+                >
                   Akses Layanan Digital →
                 </Link>
               </div>
@@ -334,9 +383,14 @@ export default function DetailBeritaPage() {
                   <span className="text-emerald-700 font-bold uppercase tracking-wider text-xs bg-emerald-100 px-3 py-1 rounded-full">
                     Rekomendasi
                   </span>
-                  <h3 className="text-2xl sm:text-3xl font-black text-slate-900 mt-2">Berita Terkait Lainnya</h3>
+                  <h3 className="text-2xl sm:text-3xl font-black text-slate-900 mt-2">
+                    Berita Terkait Lainnya
+                  </h3>
                 </div>
-                <Link href="/berita" className="text-sm font-bold text-emerald-700 hover:underline hidden sm:block">
+                <Link
+                  href="/berita"
+                  className="text-sm font-bold text-emerald-700 hover:underline hidden sm:block"
+                >
                   Lihat Semua →
                 </Link>
               </div>
