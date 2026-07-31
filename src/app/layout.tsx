@@ -68,7 +68,7 @@ export const metadata: Metadata = {
 
   // Canonical URL (mencegah duplikasi konten)
   alternates: {
-    canonical: "https://taneteriaja.go.id",
+    canonical: "https://taneteriaja.vercel.app",
   },
 
   // OpenGraph (Facebook, LinkedIn, WhatsApp, dll)
@@ -78,7 +78,7 @@ export const metadata: Metadata = {
       "Portal informasi dan layanan publik Kecamatan Tanete Riaja, Kabupaten Barru, Sulawesi Selatan.",
     type: "website",
     locale: "id_ID",
-    url: "https://taneteriaja.go.id",
+    url: "https://taneteriaja.vercel.app",
     siteName: "Kecamatan Tanete Riaja",
     images: [
       {
@@ -137,8 +137,8 @@ const jsonLd = {
   alternateName: "Kecamatan Tanete Riaja Kabupaten Barru",
   description:
     "Portal informasi dan layanan publik Kecamatan Tanete Riaja, Kabupaten Barru, Sulawesi Selatan.",
-  url: "https://taneteriaja.go.id",
-  logo: "https://taneteriaja.go.id/logobarru.png",
+  url: "https://taneteriaja.vercel.app",
+  logo: "https://taneteriaja.vercel.app/logobarru.png",
   address: {
     "@type": "PostalAddress",
     addressLocality: "Kecamatan Tanete Riaja",
