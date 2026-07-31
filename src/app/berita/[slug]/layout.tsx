@@ -1,16 +1,17 @@
 import { Metadata } from 'next';
 import { API_URL } from '@/lib/api';
 
-// Fungsi otomatis Next.js untuk membuat meta-tag di Server
-export async function generateMetadata({
-  params,
-}: {
-  params: { slug: string };
-}): Promise<Metadata> {
-  const { slug } = params;
+// 1. Tipe params di Next.js 15 harus berupa Promise
+type Props = {
+  params: Promise<{ slug: string }>;
+};
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  // 2. Wajib di-await terlebih dahulu sebelum mengambil slug
+  const resolvedParams = await params;
+  const slug = resolvedParams.slug;
 
   try {
-    // Ambil data detail berita langsung dari backend Express
     const res = await fetch(`${API_URL}/berita/${slug}`, {
       cache: 'no-store',
     });
@@ -30,7 +31,6 @@ export async function generateMetadata({
       };
     }
 
-    // Gunakan gambar default jika gambar di database kosong/error
     const imageUrl = berita.gambar || 'https://taneteriaja.vercel.app/pemandagan.png';
 
     return {
