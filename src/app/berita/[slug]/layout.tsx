@@ -1,33 +1,38 @@
 import { Metadata } from 'next';
 import { API_URL } from '@/lib/api';
 
-// 1. Tipe params di Next.js 15 harus berupa Promise
 type Props = {
   params: Promise<{ slug: string }>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  // 2. Wajib di-await terlebih dahulu sebelum mengambil slug
-  const resolvedParams = await params;
-  const slug = resolvedParams.slug;
-
   try {
+    // 1. Await params untuk kompatibilitas Next.js 15
+    const resolvedParams = await params;
+    const slug = resolvedParams.slug;
+
+    // 2. Fetch ke backend dengan proteksi error
     const res = await fetch(`${API_URL}/berita/${slug}`, {
       cache: 'no-store',
+    }).catch((err) => {
+      console.error('Fetch error di server:', err);
+      return null;
     });
 
-    if (!res.ok) {
+    // Jika API gagal/error, JANGAN render 404, tetap tampilkan judul fallback
+    if (!res || !res.ok) {
       return {
-        title: 'Berita Tidak Ditemukan | Kecamatan Tanete Riaja',
+        title: 'Berita Kecamatan Tanete Riaja',
+        description: 'Portal Berita Resmi Kecamatan Tanete Riaja, Kabupaten Barru.',
       };
     }
 
     const json = await res.json();
-    const berita = json.data;
+    const berita = json?.data;
 
     if (!berita) {
       return {
-        title: 'Berita Tidak Ditemukan | Kecamatan Tanete Riaja',
+        title: 'Berita Kecamatan Tanete Riaja',
       };
     }
 
@@ -51,15 +56,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
           },
         ],
       },
-      twitter: {
-        card: 'summary_large_image',
-        title: berita.judul,
-        description: berita.ringkasan,
-        images: [imageUrl],
-      },
     };
   } catch (error) {
-    console.error('Gagal generate metadata berita:', error);
+    console.error('Fatal error generateMetadata:', error);
     return {
       title: 'Berita Kecamatan Tanete Riaja',
     };
