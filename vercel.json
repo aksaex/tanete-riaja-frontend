@@ -1,19 +1,8 @@
 {
   "rewrites": [
     {
-      "source": "/berita/:slug",
-      "has": [
-        {
-          "type": "header",
-          "key": "user-agent",
-          "value": ".*(WhatsApp|FacebookExternalHit|Twitterbot|TelegramBot).*"
-        }
-      ],
+      "source": "/api/og/:slug",
       "destination": "/api/og?slug=:slug"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
     }
   ]
 }
