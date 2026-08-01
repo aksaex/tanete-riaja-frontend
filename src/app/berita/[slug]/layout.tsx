@@ -1,4 +1,4 @@
-//app/berita/[slug]/layout.tsx
+// app/berita/[slug]/layout.tsx
 import { Metadata } from 'next';
 import { API_URL } from '@/lib/api';
 
